@@ -1,24 +1,22 @@
-import sys
+import logging
 
 from antlr4 import InputStream
 
-from sqlparser.baseparser import build_parser
+from sqlparser.internalparser import build_parser
 from sqlparser.utils import print_tree
 
 
-def string_to_ast(string, rule, case_insensitive=True, ignore_missing_identifier_quotes=True, debug=False):
-    parser = build_string_parser(string, ignore_missing_identifier_quotes, case_insensitive)
+def string_to_ast(string, rule, *, strict_mode=False, debug=False):
+    parser = build_string_parser(string, strict_mode)
     tree = getattr(parser, rule)()
     if debug:
-        sys.stderr.flush()
-        print_tree(tree)
-        sys.stdout.flush()
+        print_tree(tree, printer=logging.warning)
     return tree
 
 
-def build_string_parser(string, case_insensitive=True, ignore_missing_identifier_quotes=True):
+def build_string_parser(string, strict_mode=False):
     string_as_stream = InputStream(string)
-    parser = build_parser(string_as_stream, case_insensitive, ignore_missing_identifier_quotes)
+    parser = build_parser(string_as_stream, strict_mode)
     return parser
 
 
