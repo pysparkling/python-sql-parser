@@ -6,7 +6,7 @@ from sqlparser.generated.SqlBaseLexer import SqlBaseLexer
 from sqlparser.generated.SqlBaseParser import SqlBaseParser
 
 
-class AddBacktickToIdentifier(antlr4.ParseTreeListener):
+class RemoveIdentifierBackticks(antlr4.ParseTreeListener):
     @staticmethod
     def exitQuotedIdentifier(ctx):
         def identity(token):
@@ -24,12 +24,12 @@ class AddBacktickToIdentifier(antlr4.ParseTreeListener):
 
 class ParseErrorListener(ErrorListener):
     def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
-        raise Exception("Parse error", msg)
+        raise SqlSyntaxError("Parse error", msg)
 
 
 class UpperCaseCharStream:
     """
-    Make SQL token detection case insensitive
+    Make SQL token detection case insensitive, allowing identifier without backticks to be seen as e.g. column names
     """
 
     def __init__(self, wrapped):
@@ -52,16 +52,19 @@ class UpperCaseCharStream:
         return getattr(self.wrapped, item)
 
 
-def build_parser(stream, case_insensitive, ignore_missing_identifier_quotes):
-    if case_insensitive:
+def build_parser(stream, strict_mode):
+    if not strict_mode:
         stream = UpperCaseCharStream(stream)
     lexer = SqlBaseLexer(stream)
     lexer.removeErrorListeners()
     lexer.addErrorListener(ParseErrorListener())
     token_stream = antlr4.CommonTokenStream(lexer)
     parser = SqlBaseParser(token_stream)
-    if ignore_missing_identifier_quotes:
-        parser.addParseListener(AddBacktickToIdentifier())
+    parser.addParseListener(RemoveIdentifierBackticks())
     parser.removeErrorListeners()
     parser.addErrorListener(ParseErrorListener())
     return parser
+
+
+class SqlSyntaxError(Exception):
+    pass
