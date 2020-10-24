@@ -8,5 +8,5 @@ def tree_to_strings(tree, indent=0):
     result = ["|" + "-" * indent + node_as_string]
     if hasattr(tree, 'children') and tree.children:
         for c in tree.children:
-            result += tree_to_strings(c, indent + 2)
+            result += tree_to_strings(c, indent + 1)
     return result
