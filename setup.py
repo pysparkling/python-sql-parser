@@ -5,7 +5,6 @@ from setuptools.command.build_py import build_py
 
 
 class GenerateGrammarFiles(build_py):
-
     def run(self):
         antlr_call_failed = subprocess.call("java org.antlr.v4.Tool > /dev/null", shell=True)
         if antlr_call_failed:

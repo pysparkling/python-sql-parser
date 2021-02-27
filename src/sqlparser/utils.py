@@ -4,9 +4,10 @@ def print_tree(tree, printer=print):
 
 
 def tree_to_strings(tree, indent=0):
-    node_as_string = type(tree).__name__ + (("[" + tree.symbol.text + "]") if hasattr(tree, "symbol") else "")
+    symbol = ("[" + tree.symbol.text + "]") if hasattr(tree, "symbol") else ""
+    node_as_string = type(tree).__name__ + symbol
     result = ["|" + "-" * indent + node_as_string]
     if hasattr(tree, 'children') and tree.children:
-        for c in tree.children:
-            result += tree_to_strings(c, indent + 1)
+        for child in tree.children:
+            result += tree_to_strings(child, indent + 1)
     return result

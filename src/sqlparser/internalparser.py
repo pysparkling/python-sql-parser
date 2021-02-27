@@ -8,14 +8,14 @@ from sqlparser.generated.SqlBaseParser import SqlBaseParser
 
 class RemoveIdentifierBackticks(antlr4.ParseTreeListener):
     @staticmethod
-    def exitQuotedIdentifier(ctx):
+    def exitQuotedIdentifier(ctx):  # pylint: disable=invalid-name,unused-argument
         def identity(token):
             return token
 
         return identity
 
     @staticmethod
-    def enterNonReserved(ctx):
+    def enterNonReserved(ctx):  # pylint: disable=invalid-name,unused-argument
         def add_backtick(token):
             return "`{0}`".format(token)
 
@@ -23,30 +23,31 @@ class RemoveIdentifierBackticks(antlr4.ParseTreeListener):
 
 
 class ParseErrorListener(ErrorListener):
-    def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
+    def syntaxErrorsyntaxError(
+            self, recognizer, offendingSymbol, line, column, msg, e
+    ):  # pylint: disable=invalid-name,no-self-use,too-many-arguments
         raise SqlSyntaxError("Parse error", msg)
 
 
 class UpperCaseCharStream:
     """
-    Make SQL token detection case insensitive, allowing identifier without backticks to be seen as e.g. column names
+    Make SQL token detection case insensitive and allow identifier without
+    backticks to be seen as e.g. column names
     """
 
     def __init__(self, wrapped):
         self.wrapped = wrapped
 
-    def getText(self, interval, *args):
+    def getText(self, interval, *args):  # pylint: disable=invalid-name
         if args or (self.size() > 0 and (interval.b - interval.a >= 0)):
             return self.wrapped.getText(interval, *args)
-        else:
-            return ""
+        return ""
 
-    def LA(self, i: int):
-        la = self.wrapped.LA(i)
-        if la == 0 or la == -1:
-            return la
-        else:
-            return ord(chr(la).upper())
+    def LA(self, i: int):  # pylint: disable=invalid-name
+        token = self.wrapped.LA(i)
+        if token in (0, -1):
+            return token
+        return ord(chr(token).upper())
 
     def __getattr__(self, item):
         return getattr(self.wrapped, item)
