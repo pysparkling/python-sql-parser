@@ -1,2 +1,2 @@
-include src/grammar/SqlBase.g4
+include src/sqlparser/grammar/SqlBase.g4
 include LICENSE
