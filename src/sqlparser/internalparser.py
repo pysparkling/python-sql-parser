@@ -1,6 +1,9 @@
 import antlr4
+from antlr4 import RecognitionException
 
 from antlr4.error.ErrorListener import ErrorListener
+from antlr4.error.ErrorStrategy import BailErrorStrategy
+from antlr4.error.Errors import ParseCancellationException
 
 from sqlparser.generated.SqlBaseLexer import SqlBaseLexer
 from sqlparser.generated.SqlBaseParser import SqlBaseParser
@@ -53,10 +56,30 @@ class UpperCaseCharStream:
         return getattr(self.wrapped, item)
 
 
-def build_parser(stream, strict_mode):
+class ExplicitBailErrorStrategy(BailErrorStrategy):
+    """
+    Bail Error Strategy throws a ParseCancellationException,
+    This strategy simply throw a more explicit exception
+    """
+    def recover(self, recognizer, e: RecognitionException):
+        try:
+            super(ExplicitBailErrorStrategy, self).recover(recognizer, e)
+        except ParseCancellationException:
+            raise SqlParsingError from e
+
+
+class EarlyBailSqlLexer(SqlBaseLexer):
+    def recover(self, re: RecognitionException):
+        raise SqlLexicalError from re
+
+
+def build_parser(stream, strict_mode, strategy='early_bail'):
     if not strict_mode:
         stream = UpperCaseCharStream(stream)
-    lexer = SqlBaseLexer(stream)
+    if strategy == 'early_bail':
+        lexer = EarlyBailSqlLexer(stream)
+    else:
+        lexer = SqlBaseLexer(stream)
     lexer.removeErrorListeners()
     lexer.addErrorListener(ParseErrorListener())
     token_stream = antlr4.CommonTokenStream(lexer)
@@ -64,8 +87,18 @@ def build_parser(stream, strict_mode):
     parser.addParseListener(RemoveIdentifierBackticks())
     parser.removeErrorListeners()
     parser.addErrorListener(ParseErrorListener())
+    if strategy == 'early_bail':
+        parser._errHandler = ExplicitBailErrorStrategy()
     return parser
 
 
-class SqlSyntaxError(Exception):
+class SqlParsingError(Exception):
+    pass
+
+
+class SqlLexicalError(SqlParsingError):
+    pass
+
+
+class SqlSyntaxError(SqlParsingError):
     pass
