@@ -62,7 +62,7 @@ class TestStringParsing(TestCase):
              '|-TerminalNodeImpl[<EOF>]']
         )
 
-    def test_strict_mode_reject(self):
+    def test_strict_mode_late_bail_reject(self):
         with self.assertRaises(SqlSyntaxError) as ctx:
             string_to_ast(
                 'select * from table where column like "%Python%"',
@@ -77,6 +77,20 @@ class TestStringParsing(TestCase):
         self.assertEqual(
             ctx.exception.args[1][:30],
             "mismatched input 's' expecting"
+        )
+        self.assertEqual(len(ctx.exception.args), 2)
+
+    def test_strict_mode_early_bail_reject(self):
+        with self.assertRaises(SqlSyntaxError) as ctx:
+            string_to_ast(
+                'select * from table where column like "%Python%"',
+                rule='singleStatement',
+                strict_mode=True,
+                early_bail=True
+            )
+        self.assertEqual(
+            ctx.exception.args,
+            ('Parse error', 'no viable alternative at input \'s\'')
         )
 
     def test_strict_mode(self):
