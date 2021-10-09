@@ -787,7 +787,7 @@ primaryExpression
     | STRUCT '(' (argument+=namedExpression (',' argument+=namedExpression)*)? ')'             #struct
     | FIRST '(' expression (IGNORE NULLS)? ')'                                                 #first
     | LAST '(' expression (IGNORE NULLS)? ')'                                                  #last
-    | POSITION '(' substr=valueExpression IN str=valueExpression ')'                           #position
+    | POSITION '(' substr=valueExpression IN superstr=valueExpression ')'                           #position
     | constant                                                                                 #constantDefault
     | ASTERISK                                                                                 #star
     | qualifiedName '.' ASTERISK                                                               #star
@@ -802,11 +802,11 @@ primaryExpression
     | base=primaryExpression '.' fieldName=identifier                                          #dereference
     | '(' expression ')'                                                                       #parenthesizedExpression
     | EXTRACT '(' field=identifier FROM source=valueExpression ')'                             #extract
-    | (SUBSTR | SUBSTRING) '(' str=valueExpression (FROM | ',') pos=valueExpression
-      ((FOR | ',') len=valueExpression)? ')'                                                   #substring
+    | (SUBSTR | SUBSTRING) '(' superstr=valueExpression (FROM | ',') pos=valueExpression
+      ((FOR | ',') length=valueExpression)? ')'                                                   #substring
     | TRIM '(' trimOption=(BOTH | LEADING | TRAILING)? (trimStr=valueExpression)?
        FROM srcStr=valueExpression ')'                                                         #trim
-    | OVERLAY '(' input=valueExpression PLACING replace=valueExpression
+    | OVERLAY '(' initial_value=valueExpression PLACING replace=valueExpression
       FROM position=valueExpression (FOR length=valueExpression)? ')'                          #overlay
     ;
 
@@ -875,9 +875,9 @@ colPosition
     ;
 
 dataType
-    : complex=ARRAY '<' dataType '>'                            #complexDataType
-    | complex=MAP '<' dataType ',' dataType '>'                 #complexDataType
-    | complex=STRUCT ('<' complexColTypeList? '>' | NEQ)        #complexDataType
+    : complexDefinition=ARRAY '<' dataType '>'                            #complexDataType
+    | complexDefinition=MAP '<' dataType ',' dataType '>'                 #complexDataType
+    | complexDefinition=STRUCT ('<' complexColTypeList? '>' | NEQ)        #complexDataType
     | identifier ('(' INTEGER_VALUE (',' INTEGER_VALUE)* ')')?  #primitiveDataType
     ;
 
