@@ -26,7 +26,7 @@ class RemoveIdentifierBackticks(antlr4.ParseTreeListener):
 
 
 class ParseErrorListener(ErrorListener):
-    def syntaxErrorsyntaxError(
+    def syntaxError(
             self, recognizer, offendingSymbol, line, column, msg, e
     ):  # pylint: disable=invalid-name,no-self-use,too-many-arguments
         raise SqlSyntaxError("Parse error", msg)
@@ -73,10 +73,10 @@ class EarlyBailSqlLexer(SqlBaseLexer):
         raise SqlLexicalError from re
 
 
-def build_parser(stream, strict_mode, strategy='early_bail'):
+def build_parser(stream, strict_mode=False, early_bail=True):
     if not strict_mode:
         stream = UpperCaseCharStream(stream)
-    if strategy == 'early_bail':
+    if early_bail:
         lexer = EarlyBailSqlLexer(stream)
     else:
         lexer = SqlBaseLexer(stream)
@@ -87,7 +87,7 @@ def build_parser(stream, strict_mode, strategy='early_bail'):
     parser.addParseListener(RemoveIdentifierBackticks())
     parser.removeErrorListeners()
     parser.addErrorListener(ParseErrorListener())
-    if strategy == 'early_bail':
+    if early_bail:
         parser._errHandler = ExplicitBailErrorStrategy()
     return parser
 
