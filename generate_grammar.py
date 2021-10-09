@@ -22,15 +22,10 @@ def generate_grammar():
         "-Dlanguage=Python3",
         shell=True
     )
-
-    # todo: Enable this check
-    #  This is currently failing as grammar use symbol names that conflict with Python builtins
-    #  They can probably be renamed
-    #
-    # if generation_failed:
-    #     raise EnvironmentError(
-    #         f"An unexpected error occured while generating grammar file (code {generation_failed})\n"
-    #     )
+    if generation_failed:
+        raise EnvironmentError(
+            f"An unexpected error occured while generating grammar file (code {generation_failed})\n"
+        )
 
 
 if __name__ == '__main__':
