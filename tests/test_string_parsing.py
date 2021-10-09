@@ -67,7 +67,8 @@ class TestStringParsing(TestCase):
             string_to_ast(
                 'select * from table where column like "%Python%"',
                 rule='singleStatement',
-                strict_mode=True
+                strict_mode=True,
+                early_bail=False
             )
         self.assertEqual(
             ctx.exception.args[0],
